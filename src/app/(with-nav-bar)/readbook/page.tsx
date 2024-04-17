@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import ReadBookLayout from '../readbook/layout';
+import ReadBookLayout from './layout';
 import Image from 'next/image';
 import noclub from '../../../../public/noclub.png';
 import blue from '../../../../public/booktiquereadblue.png';

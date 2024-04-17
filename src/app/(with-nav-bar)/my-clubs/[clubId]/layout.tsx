@@ -2,38 +2,25 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
+import ClubSelector from './ClubSelector';
 
 type Props = {
   children: React.ReactNode;
-  selection: React.ReactNode;
-  // clubSelection: React.ReactNode;
   params: {
     clubId: string;
   };
 };
 
-const Layout = ({
-  children,
-  selection,
-  params
-}: // clubSelection
-Props) => {
+const Layout = ({ children, params }: Props) => {
   const pathname = usePathname();
 
-  console.log({ params, pathname });
-  console.log('hi');
-  // return (
-  //   <div>
-  //     {selection}
-  //     <div>여기nav바가 있다고 쳐요</div>
-  //     {children}
-  //   </div>
-  // );
   return (
     <div>
       <div className='sticky top-0 left-0 right-0 z-10 bg-white flex flex-col justify-between'>
         {/* 북클럽 셀렉트 박스 */}
-        <div className='relative inline-block'>{selection}</div>
+        <div className='relative inline-block'>
+          <ClubSelector />
+        </div>
         <div className='flex flex-row justify-between w-full font-bold'>
           <Link
             href={`/my-clubs/${params.clubId}/info`}

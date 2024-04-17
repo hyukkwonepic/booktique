@@ -14,7 +14,7 @@ type Clubs = Tables<'clubs'>;
 
 type Props = {};
 
-const Page = (props: Props) => {
+const ClubSelector = (props: Props) => {
   const params = useParams<{
     clubId: string;
   }>();
@@ -81,4 +81,4 @@ const Page = (props: Props) => {
   );
 };
 
-export default Page;
+export default ClubSelector;

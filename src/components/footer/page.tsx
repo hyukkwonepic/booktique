@@ -40,13 +40,13 @@ const Footer = () => {
       <ul className='flex w-[90%] mx-auto justify-between  h-auto items-center text-[12px] text-center leading-[18px] font-medium px-2'>
         <li
           className={`flex h-[78px] justify-center ${
-            activeLink === 'myclubinfo2'
+            activeLink === 'my-clubs'
               ? 'text-[#35A5F6] mb-[2px]'
               : 'text-[#B2B5B9] mb-[2px]'
           }`}>
-          <Link href='/myclubinfo2' onClick={() => handleClick('myclubinfo2')}>
+          <Link href='/my-clubs' onClick={() => handleClick('my-clubs')}>
             <Image
-              src={activeLink === 'myclubinfo2' ? mybookclubActive : mybookclub}
+              src={activeLink === 'my-clubs' ? mybookclubActive : mybookclub}
               alt='mybookclub'
               width={64.69}
               height={46}

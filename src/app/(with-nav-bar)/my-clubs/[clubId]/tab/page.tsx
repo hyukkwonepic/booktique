@@ -1,8 +1,8 @@
 import React from 'react';
 import PageClient from './page-client';
 
-const MyClubInfoPage = () => {
+const Page = () => {
   return <PageClient />;
 };
 
-export default MyClubInfoPage;
+export default Page;

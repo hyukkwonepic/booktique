@@ -15,6 +15,8 @@ const SavePage = async ({ params: { id } }: { params: { id: string } }) => {
   //   const id = props.params.id;
   const supabase = createClient();
 
+  const clubId = id;
+
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -58,27 +60,31 @@ const SavePage = async ({ params: { id } }: { params: { id: string } }) => {
     (profile) => profile?.id === user?.id
   );
   // console.log('matchingProfile', matchingProfile);
-  const matchingProfileId = matchingProfile?.id;
+  const myProfileId = matchingProfile?.id;
 
-  // console.log('matchingProfileId', matchingProfileId);
+  // console.log('myProfileId', myProfileId);
 
-  // club_activities 테이블에서 user_id가 matchingProfileId와 일치하는 데이터
+  // 내가 한 모든 클럽 액티비티
   const { data: clubActivities, error: activitiesError } = await supabase
     .from('club_activities')
     .select('*')
-    .eq('user_id', matchingProfileId || '');
+    .eq('club_id', clubId)
+    .eq('user_id', myProfileId || '');
+
   console.log('clubActivities1111111111111111111', clubActivities);
+
+  const myClubActivities = clubActivities;
+
   if (activitiesError) {
     throw new Error('클럽 활동 정보를 가져오는 도중 오류가 발생했습니다.');
   }
-  // console.log('clubActivities', clubActivities);
-  // clubActivities 배열에서 clubid가 일치하는 데이터 필터링
-  const matchingActivities = clubActivities.filter(
-    (activity) => activity.club_id === id
-  );
+
+  // const matchingActivities = clubActivities.filter(
+  //   (activity) => activity.club_id === id
+  // );
   // console.log('matchingActivities', matchingActivities);
   // clubs 테이블에서 클럽 ID와 param(코드 최상단)에 해당하는 데이터 조회
-  const { data: clubData, error: clubError } = await supabase
+  const { data: club, error: clubError } = await supabase
     .from('clubs')
     .select('*')
     .eq('id', id)
@@ -90,11 +96,13 @@ const SavePage = async ({ params: { id } }: { params: { id: string } }) => {
   // console.log('matchingActivities1111', matchingActivities);
   return (
     <div className='bg-white h-full'>
-      <SaveBookInfo clubData={clubData} clubId={id} />
+      {/* <SaveBookInfo clubData={club} clubId={id} /> */}
       <SaveCard
-        clubData={clubData}
-        matchingActivities={matchingActivities}
-        id={id}
+        clubId={clubId}
+        club={club}
+        myClubActivities={
+          myClubActivities?.filter((activity) => activity !== null) ?? []
+        }
       />
     </div>
   );

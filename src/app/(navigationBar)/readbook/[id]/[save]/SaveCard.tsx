@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getUserId } from '@/utils/userAPIs/authAPI';
@@ -8,43 +9,38 @@ import { useRouter } from 'next/navigation';
 import ToastUi from '@/common/ToastUi';
 
 const supabase = createClient();
-const SaveCard = ({
-  id,
-  clubData,
-  matchingActivities
-}: {
-  id: string;
-  clubData: Tables<'clubs'>;
-  matchingActivities: Tables<'club_activities'>[];
-}) => {
-  const [recordPage, setRecordPage] = useState('');
-  // const [progress, setProgress] = useState(
-  //   matchingActivities[0]?.progress as number
-  // );
-  // console.log('progress', progress);
 
-  console.log('프롭스로 받아옴matchingActivities', matchingActivities);
+const SaveCard = ({
+  clubId,
+  club,
+  myClubActivities
+}: {
+  clubId: string;
+  club: Tables<'clubs'>;
+  myClubActivities: Tables<'club_activities'>[];
+}) => {
+  const id = clubId;
+
+  const [recordPage, setRecordPage] = useState('');
+
   const [inputValid, setInputValid] = useState(false); // 입력값 유효성 상태
   const [overPage, setOverPage] = useState(false); // 페이지 초과
   const [invalidInput, setInvalidInput] = useState(false); // 숫자만 입력하게
-  const [progressPercentage, setProgressPercentage] = useState(
-    matchingActivities[0]?.progress as number
-  ); // 페이지 진행률 상태 추가
-  const [loading, setLoading] = useState(true); // 로딩 상태 추가
+  const [progressPercentage, setProgressPercentage] = useState(0); // 페이지 진행률 상태 추가
+
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
   useEffect(() => {
-    if (matchingActivities.length > 0) {
-      setProgressPercentage(matchingActivities[0]?.progress as number);
-      setLoading(false); // matchingActivities 로드 완료 시 로딩 상태 변경
+    if (myClubActivities.length > 0) {
+      setProgressPercentage(myClubActivities[0]?.progress as number);
+      // setLoading(false); // myClubActivities 로드 완료 시 로딩 상태 변경
     }
-  }, [matchingActivities]);
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  }, [myClubActivities]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
@@ -57,7 +53,7 @@ const SaveCard = ({
       setInvalidInput(false);
 
       const inputValueNumber = Math.floor(
-        (Number(inputValueAsNumber) / (clubData.book_page as number)) * 100
+        (Number(inputValueAsNumber) / (club.book_page as number)) * 100
       );
 
       if (inputValueNumber > 100) {
@@ -80,7 +76,23 @@ const SaveCard = ({
   const handleSave = async () => {
     localStorage.removeItem('timerStarted');
     localStorage.removeItem('timerSeconds');
-    const memberId = await getUserId();
+    const userId = await getUserId();
+
+    if (!userId) {
+      return;
+    }
+    const { data: member, error: getMemberError } = await supabase
+      .from('members')
+      .select()
+      .eq('club_id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (getMemberError || !member) {
+      console.log('you are not even a member!');
+      return;
+    }
+
     setInputValid(false); // 이걸 false해줘야 저장을 하고도 버튼 비활성화 동작이 일어남
     router.refresh();
     if (!/^\d+$/.test(recordPage)) {
@@ -88,10 +100,10 @@ const SaveCard = ({
       return;
     }
     const result = Math.floor(
-      (Number(recordPage) / (clubData.book_page as number)) * 100
+      (Number(recordPage) / (club.book_page as number)) * 100
     );
 
-    if (Number(recordPage) > (clubData.book_page as number)) {
+    if (Number(recordPage) > (club.book_page as number)) {
       setOverPage(true); // 페이지 수 초과 알림 표시
       setRecordPage('');
       return;
@@ -102,7 +114,7 @@ const SaveCard = ({
       .from('club_activities')
       .select('*')
       .eq('club_id', id)
-      .eq('user_id', memberId as string);
+      .eq('user_id', userId as string);
 
     if (fetchError) {
       throw new Error(
@@ -119,7 +131,7 @@ const SaveCard = ({
         .from('club_activities')
         .update({ progress: result })
         .eq('club_id', id)
-        .eq('user_id', memberId as string);
+        .eq('user_id', userId as string);
 
       if (updateError) {
         throw new Error(
@@ -135,7 +147,12 @@ const SaveCard = ({
       const { data: insertedData, error: insertError } = await supabase
         .from('club_activities')
         .insert([
-          { club_id: id, progress: result, user_id: memberId as string }
+          {
+            club_id: id,
+            progress: result,
+            user_id: userId as string,
+            member_id: member.id
+          }
         ]);
       if (insertError) {
         throw new Error('club_activities 테이블에 삽입하는 중 오류 발생:');
@@ -157,8 +174,8 @@ const SaveCard = ({
     fontSize: '8px'
   };
   // console.log(
-  //   '프롭스로 받아옴matchingActivities22222222222',
-  //   matchingActivities
+  //   '프롭스로 받아옴myClubActivities22222222222',
+  //   myClubActivities
   // );
 
   return (
@@ -179,8 +196,8 @@ const SaveCard = ({
         progress={progress}
         recordPage={recordPage}
         ddd={ddd}
-        clubData={clubData}
-        // matchingActivities={matchingActivities}
+        club={club}
+        // myClubActivities={myClubActivities}
       /> */}
       <div className='w-[343px] h-[70px] bg-[#F5F5F7] px-[24.5px] py-[32px] mt-[16px] mx-auto rounded-[10px]'>
         <div className='w-[294px] h-[6px] mx-auto relative rounded-[10px] '>
